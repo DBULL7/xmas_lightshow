@@ -1,28 +1,41 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
-
-# Simple test for NeoPixels on Raspberry Pi
 import time
 import board
 import neopixel
 import random
+import math
 
 
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
 # NeoPixels must be connected to D10, D12, D18 or D21 to work.
 pixel_pin = board.D18
 
-# The number of NeoPixels
-num_pixels = 300
+
+# total number of NeoPixels on potentially multiple strands
+num_pixels = 50
+
+# electric slide size, use more for larger strands to not have it take forever 
+slider_size = 1
+slider_delay = 0.01
+# used for when the slider is past the halfway point,
+# if you don't increase the timeout it can have a weird effect on the remaining pixels
+slider_begin_extended_delay = int(math.ceil(num_pixels / 3))
+slider_end_extended_delay = num_pixels / 5 
+print("SLIDER EXTENDED DELAY POINT", slider_begin_extended_delay, "SLIDER END EXTENDED DELAY POINT", slider_end_extended_delay)
+
 
 # The order of the pixel colors - RGB or GRB. Some NeoPixels have red and green reversed!
 # For RGBW NeoPixels, simply change the ORDER to RGBW or GRBW.
 ORDER = neopixel.GRB
 
-pixels = neopixel.NeoPixel(
-    pixel_pin, num_pixels, brightness=0.6, auto_write=False, pixel_order=ORDER
-)
+pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.9, auto_write=False, pixel_order=ORDER)
 
+def calc_slider_delay(i):
+    if i < slider_end_extended_delay:
+        time.sleep(slider_delay * 4)
+    elif i < slider_begin_extended_delay:
+        time.sleep(slider_delay * 3)
+    else:
+        time.sleep(slider_delay)
 
 def wheel(pos):
     # Input a value 0 to 255 to get a color value.
@@ -78,7 +91,6 @@ def electric_slide():
         time.sleep(.009)
 
 def electric_slide_stacking(pxls, color, count, useRandom):
-    print(pxls)
     for i in range(0, pxls, count):
         if i != 0:
             clear_previous_left(i)
@@ -94,22 +106,17 @@ def electric_slide_stacking(pxls, color, count, useRandom):
         for y in range(count):
             pixels[i + y] = color
         pixels.show()
-        # time.sleep(.009)
+        calc_slider_delay(pxls)
 
 def inverted_electric_slide(pxls, color, count):
-    print(pxls)
     for i in range(pxls - 1, -1, count * -1):
-        print("HERE",i)
         if i != num_pixels - 1:
             clear_previous_right(pxls, i)
-        #for y in range(count, 0, -1):
         for y in range(count):
-            print("Y", i - y, i, y)
             pixels[i - y] = color 
         pixels.show()
 
 def inverted_electric_slide_stacking(pxls, color, count, useRandom):
-    print(pxls)
     # 300 - 300 - 1 = -1
     # 300 - 290 - 1 = 9
     # 300 - 280 - 1 = 19
@@ -128,6 +135,7 @@ def inverted_electric_slide_stacking(pxls, color, count, useRandom):
         for y in range(count):
             pixels[i - y] = color
         pixels.show()
+        calc_slider_delay(pxls)
 
 
 
@@ -181,24 +189,18 @@ def dance():
 
 def execute_app():
     while True:
-        # rainbow_cycle(0.009)  # rainbow cycle with 1ms delay per step
-        # electric_slide()
-        # for color in primary_colors:
-            # electric_slide_stacking(num_pixels, color, 10, False)
-            # time.sleep(3)
-        # time.sleep(3)
-        # electric_slide_stacking(num_pixels, random_color(), 10, True)
-        # time.sleep(3)
-        # inverted_electric_slide_stacking(num_pixels, random_color(), 10, True)
-        # time.sleep(3)
-        # for color in primary_colors:
-            # inverted_electric_slide_stacking(num_pixels, color, 10, False)
-            # time.sleep(3)
-        # pixels.fill((255, 0, 0))
-        # pixels.show()
-        # time.sleep(10)
-        # candy_cane()
-        dance()
+        rainbow_cycle(0.009)  # rainbow cycle with 1ms delay per step
+        electric_slide()
+        for color in primary_colors:
+            electric_slide_stacking(num_pixels, color, slider_size, False)
+            time.sleep(3)
+        electric_slide_stacking(num_pixels, random_color(), slider_size, True)
+        time.sleep(3)
+        inverted_electric_slide_stacking(num_pixels, random_color(), slider_size, True)
+        time.sleep(3)
+        for color in primary_colors:
+            inverted_electric_slide_stacking(num_pixels, color, slider_size, False)
+            time.sleep(3)
 
 
 def handle_cleanup():

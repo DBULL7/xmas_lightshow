@@ -4,6 +4,8 @@ import neopixel
 import random
 import math
 import threading
+import psutil
+import datetime
 
 
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
@@ -31,17 +33,17 @@ class Show:
         self.num_pixels = lights
         self.slider_size = slider_size
         self.slider_delay = slider_delay
-        self.thread = threading.Thread(target=self.run, args=())
+        self.thread = threading.Thread(target=self.run)
         self.isRed = True
         # computed properties
         self.slider_begin_extended_delay = int(math.ceil(lights / 3))
         self.slider_end_extended_delay = lights / 5
         # neopixel specific properties
         self.ORDER = neopixel.GRB
-        self.pixels = neopixel.NeoPixel(pixel_pin, self.num_pixels, brightness=0.7, auto_write=False, pixel_order=self.ORDER)
+        self.pixels = neopixel.NeoPixel(pixel_pin, self.num_pixels, brightness=0.9, auto_write=False, pixel_order=self.ORDER)
 
     def start(self):
-        self.thread.daemon = True
+        #self.thread.daemon = True
         self.thread.start()
 
     def stop(self):
@@ -50,9 +52,24 @@ class Show:
     # the show
     def run(self):
         while True:
+            if not is_showtime():
+                self.clear_all()
+                time.sleep(60 * 15)
+                break
+
+
             for color in primary_colors:
                 self.electric_slide_stacking(self.num_pixels, color, self.slider_size, False)
                 time.sleep(3)
+            self.electric_slide_stacking(self.num_pixels, random_color(), self.slider_size, True)
+            time.sleep(3)
+            self.inverted_electric_slide_stacking(self.num_pixels, random_color(), self.slider_size, True)
+            time.sleep(3)
+            for color in primary_colors:
+                self.inverted_electric_slide_stacking(self.num_pixels, color, self.slider_size, False)
+                time.sleep(3)
+            #self.rainbow_cycle(0.009)
+            #time.sleep(.5)
 
 
     def calc_slider_delay(self, i):
@@ -109,6 +126,7 @@ class Show:
 
     def electric_slide(self):
         for i in range(self.num_pixels):
+            print("I", i)
             if i != 0:
                 self.clear_previous_left(i)
             self.pixels[i] = self.wheel(i & 255)
@@ -116,6 +134,7 @@ class Show:
             time.sleep(.009)
 
     def electric_slide_stacking(self, pxls, color, count, useRandom):
+        print("FIRED", pxls)
         for i in range(0, pxls, count):
             if i != 0:
                 self.clear_previous_left(i)
@@ -162,7 +181,7 @@ class Show:
             self.pixels.show()
             self.calc_slider_delay(pxls)
 
-    def clear_all(self, pxls):
+    def clear_all(self):
         self.pixels.fill(off)
         self.pixels.show()
 
@@ -180,6 +199,12 @@ def random_color():
     b = random.randint(0, 255)
     # TODO add a check if black
     return (g, r, b)
+
+def is_showtime():
+    start = datetime.time(18, 0, 0)
+    end = datetime.time(23, 55, 0)
+    current = datetime.datetime.now().time()
+    return start <= current <= end
 
 
 def execute_app():

@@ -4,7 +4,7 @@ Description=Flask Christmas Lights Server
 [Service]
 #ExecStart=/home/pi/xmas_2021/start.sh
 #ExecStart=/bin/bash -c "PATH=/home/pi/poetry/bin:/home/pi/.local/bin:$PATH exec ./start.sh"
-ExecStart=sudo python3 main.py
+ExecStart=sudo python3 app.py
 # Required on some systems
 WorkingDirectory=/home/pi/xmas_2021
 Restart=always

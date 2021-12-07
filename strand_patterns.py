@@ -55,7 +55,7 @@ class Show:
             if not is_showtime():
                 self.clear_all()
                 time.sleep(60 * 15)
-                break
+                continue
 
 
             for color in primary_colors:

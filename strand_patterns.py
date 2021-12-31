@@ -57,7 +57,6 @@ class Show:
                 time.sleep(60 * 15)
                 continue
 
-
             for color in primary_colors:
                 self.electric_slide_stacking(self.num_pixels, color, self.slider_size, False)
                 time.sleep(3)

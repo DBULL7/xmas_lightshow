@@ -9,10 +9,10 @@ LIGHTS = int(os.getenv('LIGHTS'))
 SLIDER_SIZE = int(os.getenv('SLIDER_SIZE'))
 SLIDER_DELAY = float(os.getenv('SLIDER_DELAY'))
 
-        
+show = Show(LIGHTS, SLIDER_SIZE, SLIDER_DELAY)
 
 
 
 if __name__ == '__main__':
-    show.start()
+    show.run()
     

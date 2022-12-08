@@ -19,7 +19,7 @@ options.chain_length = 2
 options.parallel = 1
 options.hardware_mapping = 'adafruit-hat' 
 options.gpio_slowdown = 3
-options.pixel_mapper_config = "V-mapper:Z"
+options.pixel_mapper_config = "V-mapper:Z;Rotate:90"
 
 matrix = RGBMatrix(options=options)
 
@@ -67,14 +67,15 @@ def matrix_anim():
 
 
 def stack_anim():
-    for y in range(32):
+    for y in range(21):
         for x in range(64):
             matrix.SetPixel(x, y, random.randint(30, 255), random.randint(30, 255), random.randint(30, 255))
             time.sleep(.001)
-    for _y in range(32, 64):
+    for _y in range(21, 42):
         for x in range(64):
-            matrix.SetPixel(x, _y, 255, 0, 0)
+            matrix.SetPixel(x, _y, 0, 0, 255)
             time.sleep(.001)
+
     time.sleep(3)
 
 # group = displayio.Group()
@@ -86,27 +87,43 @@ def stack_anim():
 
 # group.append(parrot_grid)
 
-image = Image.open("./partyParrotsTweet.bmp")
+image = Image.open("./assets/partyParrotsTweet.bmp")
 #image.thumbnail((matrix.width, matrix.height), Image.ANTIALIAS)
 print("SIZE", image.size)
 
 w, h = image.size
 
+def party_parrot_loop():
+    for i in range(9):
+        left = i * 32
+        right = (i * 32) + 32
+        img = image.crop((left, 0, right, 32))
+        img = img.resize((64, 64), Image.ANTIALIAS)
+        matrix.SetImage(img.convert('RGB'))
+        time.sleep(.1)
+
 
 try:
     print("Press CTRL-C to stop.")
     while True:
-        for i in range(9):
-            left = i * 32
-            right = (i * 32) + 32
-            img = image.crop((left, 0, right, 32))
-            img = img.resize((64, 64), Image.ANTIALIAS)
-            matrix.SetImage(img.convert('RGB'))
-            time.sleep(.1)
+        for x in range(10):
+            party_parrot_loop()
+
+        chief_spritesheet = Image.open("./assets/chief_spritesheet.png")
+        print("CHIEF SPRITESHEET IMAGE SIZE", chief_spritesheet.size)
+        chief_spritesheet = chief_spritesheet.convert('RGB')
+
+        img = chief_spritesheet.crop((0, 0, 152, 156))
+
+        
+        #chief_spritesheet = chief_spritesheet.resize((96, 64), Image.ANTIALIAS)
+        #matrix.SetImage(chief_spritesheet)
+        img = img.resize((64, 64), Image.ANTIALIAS)
+        matrix.SetImage(img)
+        time.sleep(5)
 
         #matrix.SetImage(image.convert('RGB'))
-        #matrix.SetPixel(1, 1, 255, 255, 255)
-    #stack_anim()
+        #stack_anim()
     #snow()
     # matrix_anim() 
 
